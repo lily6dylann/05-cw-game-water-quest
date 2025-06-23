@@ -1,21 +1,18 @@
 // Game configuration and state variables
 const GOAL_CANS = 25;        // Total items needed to collect
-let currentCans = 0;         // Current number of items collected
-let gameActive = false;      // Tracks if game is currently running
-let spawnInterval;          // Holds the interval for spawning items
+let currentCans = 0;
+let gameActive = false;
+let spawnInterval;
 let timer = 30;
 let timerInterval;
 
-// Water Quest Game Logic
 const grid = document.querySelector('.game-grid');
 const cansCounter = document.getElementById('current-cans');
 const startBtn = document.getElementById('start-game');
-const totalCans = 20;
-let collected = 0;
-let cans = [];
+const resetBtn = document.getElementById('reset-game');
 const timerDisplay = document.getElementById('timer');
+const achievement = document.getElementById('achievements');
 
-// Winning and losing messages
 const winningMessages = [
   "Amazing! You brought clean water to a community!",
   "Incredible! Every can counts for clean water!",
@@ -31,76 +28,58 @@ const losingMessages = [
   "So close! Try again for more impact!"
 ];
 
-// Creates the 3x3 game grid where items will appear
+// Create the grid cells (3x3)
 function createGrid() {
   grid.innerHTML = '';
-  cans = [];
-  for (let i = 0; i < totalCans; i++) {
+  for (let i = 0; i < 9; i++) {
     const cell = document.createElement('div');
-    cell.className = 'grid-cell'; // Each cell represents a grid square
-    const can = document.createElement('div');
-    can.className = 'water-can';
-    can.title = 'Collect this can!';
-    can.setAttribute('tabindex', '0');
-    can.addEventListener('click', collectCan);
-    can.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        collectCan.call(can, e);
-      }
-    });
-    cell.appendChild(can);
+    cell.className = 'grid-cell';
     grid.appendChild(cell);
-    cans.push(can);
   }
 }
 
-// Ensure the grid is created when the page loads
-createGrid();
-
-// Spawns a new item in a random grid cell
+// Show a can in a random cell
 function spawnWaterCan() {
-  if (!gameActive) return; // Stop if the game is not active
+  if (!gameActive) return;
+  // Clear all cells
   const cells = document.querySelectorAll('.grid-cell');
-  
-  // Clear all cells before spawning a new water can
-  cells.forEach(cell => (cell.innerHTML = ''));
+  cells.forEach(cell => cell.innerHTML = '');
 
-  // Select a random cell from the grid to place the water can
-  const randomCell = cells[Math.floor(Math.random() * cells.length)];
+  // Pick a random cell
+  const idx = Math.floor(Math.random() * cells.length);
+  const can = document.createElement('div');
+  can.className = 'water-can';
+  can.title = 'Collect this can!';
+  can.setAttribute('tabindex', '0');
 
-  // Use a template literal to create the wrapper and water-can element
-  randomCell.innerHTML = `
-    <div class="water-can-wrapper">
-      <div class="water-can"></div>
-    </div>
-  `;
-}
-
-function collectCan(e) {
-  if (!this.classList.contains('collected')) {
-    this.classList.add('collected');
-    this.style.backgroundColor = '#FFC907'; // charity: water yellow
-    setTimeout(() => {
-      this.style.backgroundColor = '';
-    }, 200);
-    collected++;
-    currentCans++;
-    cansCounter.textContent = currentCans;
-    // Animate the counter for feedback
-    cansCounter.classList.add('score-bump');
-    setTimeout(() => cansCounter.classList.remove('score-bump'), 200);
-    // Show a motivational message
-    showAchievement('You just brought clean water closer to someone!');
-    if (collected >= totalCans) {
-      setTimeout(() => alert('Congratulations! You collected all the cans and helped bring clean water to a community!'), 100);
+  // Click or keyboard to collect
+  can.addEventListener('click', collectCan);
+  can.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      collectCan.call(can, e);
     }
-  }
+  });
+
+  cells[idx].appendChild(can);
 }
 
+// Collect can handler
+function collectCan(e) {
+  if (!gameActive) return;
+  currentCans++;
+  cansCounter.textContent = currentCans;
+  showAchievement("+1 can collected!");
+  // Prevent double-collecting
+  this.removeEventListener('click', collectCan);
+  this.removeEventListener('keydown', collectCan);
+  // Remove can after click for feedback
+  this.style.opacity = '0.5';
+}
+
+// Show achievement message
 function showAchievement(message) {
-  const achievement = document.getElementById('achievements');
   achievement.textContent = message;
-  achievement.style.background = '#2E9DF7'; // charity: water blue
+  achievement.style.background = '#2E9DF7';
   achievement.style.color = '#fff';
   achievement.style.padding = '8px 0';
   achievement.style.borderRadius = '6px';
@@ -108,24 +87,20 @@ function showAchievement(message) {
   achievement.style.opacity = '1';
   setTimeout(() => {
     achievement.style.opacity = '0';
-  }, 1200);
+  }, 900);
 }
 
-// Initializes and starts a new game
+// Start the game
 function startGame() {
-  if (gameActive) return; // Prevent starting a new game if one is already active
+  if (gameActive) return;
   gameActive = true;
-  collected = 0;
   currentCans = 0;
   cansCounter.textContent = currentCans;
-  createGrid(); // Set up the game grid
-  startTimer();
-  spawnInterval = setInterval(spawnWaterCan, 1000); // Spawn water cans every second
-}
-
-function startTimer() {
   timer = 30;
   timerDisplay.textContent = timer;
+  createGrid();
+  spawnWaterCan();
+  spawnInterval = setInterval(spawnWaterCan, 900);
   timerInterval = setInterval(() => {
     timer--;
     timerDisplay.textContent = timer;
@@ -135,23 +110,36 @@ function startTimer() {
   }, 1000);
 }
 
+// End the game
 function endGame() {
   gameActive = false;
   clearInterval(spawnInterval);
   clearInterval(timerInterval);
+  // Remove all cans
+  const cells = document.querySelectorAll('.grid-cell');
+  cells.forEach(cell => cell.innerHTML = '');
   let win = currentCans >= 20;
-  let message;
-  if (win) {
-    message = winningMessages[Math.floor(Math.random() * winningMessages.length)];
-    showAchievement(message);
-    launchConfetti();
-  } else {
-    message = losingMessages[Math.floor(Math.random() * losingMessages.length)];
-    showAchievement(message);
-  }
+  let message = win
+    ? winningMessages[Math.floor(Math.random() * winningMessages.length)]
+    : losingMessages[Math.floor(Math.random() * losingMessages.length)];
+  showAchievement(message);
+  if (win) launchConfetti();
 }
 
-// Simple confetti effect
+// Reset the game
+function resetGame() {
+  gameActive = false;
+  clearInterval(spawnInterval);
+  clearInterval(timerInterval);
+  currentCans = 0;
+  cansCounter.textContent = currentCans;
+  timer = 30;
+  timerDisplay.textContent = timer;
+  achievement.textContent = '';
+  createGrid();
+}
+
+// Confetti effect (simple)
 function launchConfetti() {
   for (let i = 0; i < 80; i++) {
     const conf = document.createElement('div');
@@ -171,22 +159,12 @@ function launchConfetti() {
   }
 }
 
-// Set up click handler for the start button
-document.getElementById('start-game').addEventListener('click', startGame);
-document.getElementById('reset-game').addEventListener('click', resetGame);
+// Event listeners
+startBtn.addEventListener('click', startGame);
+resetBtn.addEventListener('click', resetGame);
 
-function resetGame() {
-  gameActive = false;
-  clearInterval(spawnInterval);
-  clearInterval(timerInterval);
-  collected = 0;
-  currentCans = 0;
-  cansCounter.textContent = currentCans;
-  timer = 30;
-  timerDisplay.textContent = timer;
-  createGrid();
-  showAchievement('Game reset! Ready to bring more clean water?');
-}
+// Initialize grid on load
+createGrid();
 
 // Add CSS for score-bump animation
 const style = document.createElement('style');
