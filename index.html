@@ -11,14 +11,33 @@
     <h1><img src="img/charity-water-logo.png" alt="charity: water logo" class="cw-logo"> Water Quest</h1>
     <p class="game-instructions">Collect 20 items to complete the game!</p>
     <div class="stats">
+      <p>
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </p>
       <p>Cans Collected: <span id="current-cans">0</span></p>
       <p>Time Left: <span id="timer">30</span>s</p>
     </div>
     <div id="achievements" class="achievement"></div>
+    <div class="progress-container">
+      <div id="progress-bar"></div>
+    </div>
     <div class="game-grid"></div>
     <button id="start-game">Start Game</button>
     <button id="reset-game">Reset</button>
   </div>
+  <footer class="cw-footer">
+    <p>
+      Learn more at
+      <a href="https://www.charitywater.org/" target="_blank" rel="noopener">charity: water</a>
+      &nbsp;|&nbsp;
+      <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener">Donate Now</a>
+    </p>
+  </footer>
   <script src="script.js"></script>
 </body>
 </html>

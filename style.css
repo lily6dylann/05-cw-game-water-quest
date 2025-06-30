@@ -20,12 +20,15 @@ Fonts:
 
 /* ### Visual Styling */
 
+/* Import Montserrat from Google Fonts for a modern, on-brand look */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
 * {
   box-sizing: border-box;
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Montserrat', 'Avenir', 'Proxima Nova', Arial, sans-serif;
   margin: 0;
   padding: 30px;
   background: linear-gradient(120deg, #e0f7fa 0%, #fffbe7 100%);
@@ -175,6 +178,19 @@ h1 img {
   }
 }
 
+.bad-can {
+  background-color: #F5402C; /* charity: water red */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  box-shadow: 0 0 8px #F5402C55;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popUp 0.2s;
+}
 
 button {
   background-color: #FFC907;
@@ -201,6 +217,38 @@ button:hover {
 button:active {
   background: #FFC907;
   color: #159A48;
+}
+
+.cw-footer {
+  text-align: center;
+  margin-top: 40px;
+  padding: 18px 0 10px 0;
+  background: #fffbe7;
+  border-top: 2px solid #FFC907;
+  font-size: 1.1em;
+}
+.cw-footer a {
+  color: #2E9DF7;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+.cw-footer a:hover {
+  color: #FFC907;
+}
+
+.progress-container {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  height: 10px;
+  margin-top: 10px;
+}
+#progress-bar {
+  height: 100%;
+  width: 0%;
+  background-color: #FFC907; /* charity: water yellow */
+  transition: width 0.3s ease-in-out;
 }
 
 @media (max-width: 600px) {

@@ -1,9 +1,20 @@
 // Game configuration and state variables
-const GOAL_CANS = 25;        // Total items needed to collect
+const difficultySelect = document.getElementById('difficulty');
+
+// Difficulty settings
+const DIFFICULTY_SETTINGS = {
+  easy:   { goal: 15, time: 40, spawn: 1200 },
+  normal: { goal: 20, time: 30, spawn: 900 },
+  hard:   { goal: 30, time: 20, spawn: 600 }
+};
+
+let GOAL_CANS = DIFFICULTY_SETTINGS.normal.goal;
+let timer = DIFFICULTY_SETTINGS.normal.time;
+let spawnSpeed = DIFFICULTY_SETTINGS.normal.spawn;
+
 let currentCans = 0;
 let gameActive = false;
 let spawnInterval;
-let timer = 30;
 let timerInterval;
 
 const grid = document.querySelector('.game-grid');
@@ -48,7 +59,12 @@ function spawnWaterCan() {
   // Pick a random cell
   const idx = Math.floor(Math.random() * cells.length);
   const can = document.createElement('div');
-  can.className = 'water-can';
+
+  // 20% chance for a bad can
+  const isBadCan = Math.random() < 0.2; // 20% chance
+  can.className = isBadCan ? 'bad-can' : 'water-can';
+  can.dataset.type = isBadCan ? 'bad' : 'good';
+
   can.title = 'Collect this can!';
   can.setAttribute('tabindex', '0');
 
@@ -66,14 +82,37 @@ function spawnWaterCan() {
 // Collect can handler
 function collectCan(e) {
   if (!gameActive) return;
-  currentCans++;
+
+  if (this.dataset.type === 'bad') {
+    currentCans = Math.max(0, currentCans - 2); // deduct points for bad can
+    showAchievement("Oops! Dirty water -2");
+  } else {
+    currentCans++;
+    showAchievement("+1 can collected!");
+    // Special achievement every 5 cans
+    if (currentCans > 0 && currentCans % 5 === 0) {
+      showAchievement(`You’ve helped ${currentCans} people get clean water!`);
+    }
+  }
   cansCounter.textContent = currentCans;
-  showAchievement("+1 can collected!");
+
+  // Update progress bar
+  document.getElementById('progress-bar').style.width =
+    `${(currentCans / GOAL_CANS) * 100}%`;
+
+  // Add a quick pop animation before removing the can
+  this.style.transition = 'transform 0.15s, opacity 0.15s';
+  this.style.transform = 'scale(1.3)';
+  this.style.opacity = '0';
+
+  // Remove the can from the DOM after the animation
+  setTimeout(() => {
+    if (this.parentNode) this.parentNode.removeChild(this);
+  }, 150);
+
   // Prevent double-collecting
   this.removeEventListener('click', collectCan);
   this.removeEventListener('keydown', collectCan);
-  // Remove can after click for feedback
-  this.style.opacity = '0.5';
 }
 
 // Show achievement message
@@ -90,17 +129,28 @@ function showAchievement(message) {
   }, 900);
 }
 
+// Update settings based on difficulty
+function setDifficulty() {
+  const diff = difficultySelect.value;
+  GOAL_CANS = DIFFICULTY_SETTINGS[diff].goal;
+  timer = DIFFICULTY_SETTINGS[diff].time;
+  spawnSpeed = DIFFICULTY_SETTINGS[diff].spawn;
+  timerDisplay.textContent = timer;
+  document.querySelector('.game-instructions').textContent =
+    `Collect ${GOAL_CANS} items to complete the game!`;
+}
+
 // Start the game
 function startGame() {
+  setDifficulty();
   if (gameActive) return;
   gameActive = true;
   currentCans = 0;
   cansCounter.textContent = currentCans;
-  timer = 30;
   timerDisplay.textContent = timer;
   createGrid();
   spawnWaterCan();
-  spawnInterval = setInterval(spawnWaterCan, 900);
+  spawnInterval = setInterval(spawnWaterCan, spawnSpeed);
   timerInterval = setInterval(() => {
     timer--;
     timerDisplay.textContent = timer;
@@ -118,7 +168,7 @@ function endGame() {
   // Remove all cans
   const cells = document.querySelectorAll('.grid-cell');
   cells.forEach(cell => cell.innerHTML = '');
-  let win = currentCans >= 20;
+  let win = currentCans >= GOAL_CANS;
   let message = win
     ? winningMessages[Math.floor(Math.random() * winningMessages.length)]
     : losingMessages[Math.floor(Math.random() * losingMessages.length)];
@@ -128,65 +178,65 @@ function endGame() {
 
 // Reset the game
 function resetGame() {
-  gameActive = false;
-  clearInterval(spawnInterval);
-  clearInterval(timerInterval);
-  currentCans = 0;
-  cansCounter.textContent = currentCans;
-  timer = 30;
+  setDifficulty();
   timerDisplay.textContent = timer;
   achievement.textContent = '';
-  createGrid();
-}
-
-// Confetti effect (simple)
-function launchConfetti() {
+  createGrid();(timerInterval);
+} currentCans = 0;
+  cansCounter.textContent = currentCans;
+// Confetti effect (simple)= timer;
+function launchConfetti() { '';
   for (let i = 0; i < 80; i++) {
     const conf = document.createElement('div');
     conf.className = 'confetti';
     conf.style.left = Math.random() * 100 + 'vw';
     conf.style.background = ['#FFC907', '#2E9DF7', '#8BD1CB', '#4FCB53', '#FF902A', '#F5402C', '#159A48', '#F16061'][Math.floor(Math.random()*8)];
     conf.style.animationDuration = (Math.random() * 1 + 1.5) + 's';
-    conf.style.opacity = Math.random();
+    conf.style.opacity = Math.random();('div');
     conf.style.transform = `rotate(${Math.random()*360}deg)`;
-    conf.style.position = 'fixed';
-    conf.style.top = '-20px';
-    conf.style.width = '10px';
-    conf.style.height = '18px';
-    conf.style.zIndex = 9999;
+    conf.style.position = 'fixed';) * 100 + 'vw';
+    conf.style.top = '-20px';'#FFC907', '#2E9DF7', '#8BD1CB', '#4FCB53', '#FF902A', '#F5402C', '#159A48', '#F16061'][Math.floor(Math.random()*8)];
+    conf.style.width = '10px';on = (Math.random() * 1 + 1.5) + 's';
+    conf.style.height = '18px';andom();
+    conf.style.zIndex = 9999;otate(${Math.random()*360}deg)`;
     document.body.appendChild(conf);
     setTimeout(() => conf.remove(), 2000);
-  }
-}
-
-// Event listeners
+  } conf.style.width = '10px';
+}   conf.style.height = '18px';
+    conf.style.zIndex = 9999;
+// Event listenersappendChild(conf);
 startBtn.addEventListener('click', startGame);
 resetBtn.addEventListener('click', resetGame);
-
+}
 // Initialize grid on load
-createGrid();
-
-// Add CSS for score-bump animation
+createGrid();eners
+startBtn.addEventListener('click', startGame);
+// Add CSS for score-bump animationresetGame);
 const style = document.createElement('style');
-style.innerHTML = `
+style.innerHTML = `on load
 #current-cans.score-bump {
   color: #FFC907;
-  font-size: 2em;
-  transition: font-size 0.2s, color 0.2s;
-}
-`;
+  font-size: 2em;ore-bump animation
+  transition: font-size 0.2s, color 0.2s;le');
+}tyle.innerHTML = `
+`;urrent-cans.score-bump {
 document.head.appendChild(style);
-
-// Add confetti CSS
+  font-size: 2em;
+// Add confetti CSSsize 0.2s, color 0.2s;
 const confettiStyle = document.createElement('style');
 confettiStyle.innerHTML = `
-.confetti {
+.confetti {ad.appendChild(style);
   border-radius: 3px;
   pointer-events: none;
-  animation: confetti-fall linear forwards;
-}
+  animation: confetti-fall linear forwards;t('style');
+}onfettiStyle.innerHTML = `
 @keyframes confetti-fall {
-  to {
+  to {er-radius: 3px;
+    transform: translateY(100vh) rotate(360deg);
+  }nimation: confetti-fall linear forwards;
+}
+`;eyframes confetti-fall {
+document.head.appendChild(confettiStyle);
     transform: translateY(100vh) rotate(360deg);
   }
 }
