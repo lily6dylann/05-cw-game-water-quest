@@ -5,22 +5,122 @@
   <meta name="viewport" content="width=device-width">
   <title>Water Quest</title>
   <link href="style.css" rel="stylesheet" type="text/css" />
+  <style>
+    /* Progress Bar Styles */
+    .progress-container {
+      width: 90%;
+      max-width: 400px;
+      margin: 0 auto 18px auto;
+      background: #e0e0e0;
+      border-radius: 8px;
+      height: 18px;
+      box-shadow: 0 2px 8px #2E9DF722;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #FFC907 60%, #2E9DF7 100%);
+      border-radius: 8px 0 0 8px;
+      transition: width 0.3s, background 0.3s;
+    }
+
+    /* Milestone flash effect */
+    .milestone-flash {
+      animation: milestoneFlash 0.6s;
+    }
+    @keyframes milestoneFlash {
+      0% { background: #fffbe7; }
+      40% { background: #FFC907; }
+      100% { background: #fffbe7; }
+    }
+
+    /* Branding styles */
+    .cw-branding {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .cw-logo-large {
+      max-width: 200px;
+      height: auto;
+    }
+    .cw-fact {
+      font-size: 1.2em;
+      color: #333;
+      margin-top: 10px;
+    }
+
+    /* Stats styles */
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin: 20px 0;
+    }
+    .stat-block {
+      flex: 1 1 45%;
+      margin: 10px 0;
+    }
+    .stat-label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .stat-unit {
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
+  <div id="intro-overlay" class="intro-overlay">
+    <div class="intro-content">
+      <h2>Welcome to Water Quest!</h2>
+      <p>
+        Collect as many water cans as you can before time runs out.<br>
+        Click on the cans as they pop up in the grid.<br>
+        Bonus cans are worth extra points!<br>
+        Choose your difficulty and try to beat your high score.
+      </p>
+      <button id="close-intro">Start Game</button>
+    </div>
+  </div>
   <div class="container">
-    <h1><img src="img/charity-water-logo.png" alt="charity: water logo" class="cw-logo"> Water Quest</h1>
+    <div class="cw-branding">
+      <div class="cw-fact" id="cw-fact">
+        💧 Every can you collect helps bring clean water to people in need!
+      </div>
+    </div>
+    <h1>Water Quest</h1>
     <p class="game-instructions">Collect 20 items to complete the game!</p>
     <div class="stats">
-      <p>
-        <label for="difficulty">Difficulty:</label>
+      <div class="stat-block">
+        <span class="stat-label">Difficulty:</span>
         <select id="difficulty">
           <option value="easy">Easy</option>
           <option value="normal" selected>Normal</option>
           <option value="hard">Hard</option>
         </select>
-      </p>
-      <p>Cans Collected: <span id="current-cans">0</span></p>
-      <p>Time Left: <span id="timer">30</span>s</p>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Cans Collected:</span>
+        <span id="current-cans">0</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Time Left:</span>
+        <span id="timer">30</span><span class="stat-unit">s</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">High Score:</span>
+        <span id="high-score">0</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">Streak:</span>
+        <span id="streak">0</span>
+      </div>
+    </div>
+    <div class="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
     </div>
     <div id="achievements" class="achievement"></div>
     <div class="game-grid"></div>
@@ -36,5 +136,9 @@
     </p>
   </footer>
   <script src="script.js"></script>
+  <audio id="collect-sound" src="sounds/collect.mp3" preload="auto"></audio>
+  <audio id="miss-sound" src="sounds/miss.mp3" preload="auto"></audio>
+  <audio id="win-sound" src="sounds/win.mp3" preload="auto"></audio>
+  <audio id="button-sound" src="sounds/button.mp3" preload="auto"></audio>
 </body>
 </html>

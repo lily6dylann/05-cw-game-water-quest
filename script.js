@@ -23,6 +23,22 @@ const startBtn = document.getElementById('start-game');
 const resetBtn = document.getElementById('reset-game');
 const timerDisplay = document.getElementById('timer');
 const achievement = document.getElementById('achievements');
+let highScore = localStorage.getItem('highScore') || 0;
+let streak = 0;
+const highScoreDisplay = document.getElementById('high-score');
+const streakDisplay = document.getElementById('streak');
+
+const progressBar = document.getElementById('progress-bar');
+const container = document.querySelector('.container');
+let lastMilestone = 0;
+
+const MILESTONES = [
+  { percent: 0.25, messages: ["Great start! 25% of your goal!", "Keep going! 25% reached!"] },
+  { percent: 0.5,  messages: ["Halfway there! 50% reached!", "Awesome! You’re halfway!"] },
+  { percent: 0.75, messages: ["Almost done! 75% reached!", "So close! 75% of your goal!"] },
+  { percent: 1,    messages: ["Goal reached! Amazing!", "You did it! 100% complete!"] }
+];
+let triggeredMilestones = new Set();
 
 const winningMessages = [
   "Amazing! You brought clean water to a community!",
@@ -52,34 +68,33 @@ function createGrid() {
 // Show a can in a random cell
 function spawnWaterCan() {
   if (!gameActive) return;
-  // Clear all cells
   const cells = document.querySelectorAll('.grid-cell');
   cells.forEach(cell => cell.innerHTML = '');
 
-  // Pick a random cell
   const idx = Math.floor(Math.random() * cells.length);
   const can = document.createElement('div');
-  can.className = 'water-can';
-  can.title = 'Collect this can!';
+  let isBonus = Math.random() < 0.2; // 20% chance
+  can.className = isBonus ? 'water-can bonus-can' : 'water-can';
+  can.title = isBonus ? 'Bonus can! +3 points' : 'Collect this can!';
   can.setAttribute('tabindex', '0');
-
-  // Click or keyboard to collect
-  can.addEventListener('click', collectCan);
+  can.addEventListener('click', function(e) {
+    collectCan.call(can, e, isBonus);
+  });
   can.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') {
-      collectCan.call(can, e);
+      collectCan.call(can, e, isBonus);
     }
   });
-
   cells[idx].appendChild(can);
 }
 
 // Collect can handler
-function collectCan(e) {
+function collectCan(e, isBonus = false) {
   if (!gameActive) return;
-  currentCans++;
+  let points = isBonus ? 3 : 1;
+  currentCans += points;
   cansCounter.textContent = currentCans;
-  showAchievement("+1 can collected!");
+  showAchievement(isBonus ? "+3 bonus!" : "+1 can collected!");
 
   // Add a quick pop animation before removing the can
   this.style.transition = 'transform 0.15s, opacity 0.15s';
@@ -94,6 +109,20 @@ function collectCan(e) {
   // Prevent double-collecting
   this.removeEventListener('click', collectCan);
   this.removeEventListener('keydown', collectCan);
+
+  // Play collect sound
+  document.getElementById('collect-sound').play();
+
+  // Update streak and high score
+  streak++;
+  streakDisplay.textContent = streak;
+  if (currentCans > highScore) {
+    highScore = currentCans;
+    localStorage.setItem('highScore', highScore);
+    highScoreDisplay.textContent = highScore;
+  }
+
+  updateProgress();
 }
 
 // Show achievement message
@@ -129,6 +158,7 @@ function startGame() {
   currentCans = 0;
   cansCounter.textContent = currentCans;
   timerDisplay.textContent = timer;
+  triggeredMilestones.clear(); // <-- Reset milestones
   createGrid();
   spawnWaterCan();
   spawnInterval = setInterval(spawnWaterCan, spawnSpeed);
@@ -151,10 +181,20 @@ function endGame() {
   cells.forEach(cell => cell.innerHTML = '');
   let win = currentCans >= GOAL_CANS;
   let message = win
-    ? winningMessages[Math.floor(Math.random() * winningMessages.length)]
-    : losingMessages[Math.floor(Math.random() * losingMessages.length)];
+    ? "You helped provide clean water! 🌊 " + winningMessages[Math.floor(Math.random() * winningMessages.length)]
+    : "Try again to help more people get clean water! " + losingMessages[Math.floor(Math.random() * losingMessages.length)];
   showAchievement(message);
-  if (win) launchConfetti();
+  if (win) {
+    const winSound = document.getElementById('win-sound');
+    winSound.currentTime = 0;
+    winSound.play();
+    launchConfetti();
+  }
+  // Optionally, show a donate link or fact here as well
+  document.getElementById('cw-fact').innerHTML = 
+    win 
+      ? "🎉 Amazing! Your effort represents real impact—every can is a step toward clean water for all. <a href='https://www.charitywater.org/donate' target='_blank' class='cw-donate-link'>Donate or Learn More</a>"
+      : "💧 Keep going! Every can brings us closer to clean water for everyone. <a href='https://www.charitywater.org/donate' target='_blank' class='cw-donate-link'>Learn More</a>";
 }
 
 // Reset the game
@@ -167,7 +207,37 @@ function resetGame() {
   cansCounter.textContent = currentCans;
   timerDisplay.textContent = timer;
   achievement.textContent = '';
+  streak = 0;
+  streakDisplay.textContent = streak;
+  lastMilestone = 0;
+  progressBar.style.width = "0%";
+  triggeredMilestones.clear(); // <-- Reset milestones
   createGrid();
+}
+
+// Update progress bar and check milestones
+function updateProgress() {
+  const percent = Math.min((currentCans / GOAL_CANS), 1);
+  progressBar.style.width = (percent * 100) + "%";
+
+  // Check milestones
+  MILESTONES.forEach(milestone => {
+    if (percent >= milestone.percent && !triggeredMilestones.has(milestone.percent)) {
+      triggeredMilestones.add(milestone.percent);
+      // Pick a random message for this milestone
+      const msg = milestone.messages[Math.floor(Math.random() * milestone.messages.length)];
+      showMilestone(msg);
+    }
+  });
+}
+
+// Show milestone effect
+function showMilestone(msg) {
+  showAchievement(msg);
+
+  // Flash container for feedback
+  container.classList.add('milestone-flash');
+  setTimeout(() => container.classList.remove('milestone-flash'), 600);
 }
 
 // Confetti effect (simple)
@@ -191,8 +261,15 @@ function launchConfetti() {
 }
 
 // Event listeners
-startBtn.addEventListener('click', startGame);
-resetBtn.addEventListener('click', resetGame);
+startBtn.addEventListener('click', () => {
+  document.getElementById('button-sound').play();
+  startGame();
+});
+document.getElementById('reset-game').addEventListener('click', () => {
+  buttonSound.currentTime = 0;
+  buttonSound.play();
+  resetGame();
+});
 
 // Initialize grid on load
 createGrid();
@@ -223,3 +300,25 @@ confettiStyle.innerHTML = `
 }
 `;
 document.head.appendChild(confettiStyle);
+
+// On page load: display high score
+highScoreDisplay.textContent = highScore;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const intro = document.getElementById('intro-overlay');
+  const closeIntro = document.getElementById('close-intro');
+  if (intro && closeIntro) {
+    closeIntro.addEventListener('click', () => {
+      intro.style.opacity = '0';
+      setTimeout(() => {
+        intro.style.display = 'none';
+      }, 400);
+    });
+  }
+
+  const startBtn = document.getElementById('start-game');
+  startBtn.addEventListener('click', () => {
+    document.getElementById('button-sound').play();
+    startGame();
+  });
+});
