@@ -39,10 +39,10 @@ const losingMessages = [
   "So close! Try again for more impact!"
 ];
 
-// Create the grid cells (3x3)
+// Create the grid cells (4x3 for 12 cells)
 function createGrid() {
   grid.innerHTML = '';
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 12; i++) {
     const cell = document.createElement('div');
     cell.className = 'grid-cell';
     grid.appendChild(cell);
