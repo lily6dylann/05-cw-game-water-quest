@@ -52,30 +52,20 @@ function createGrid() {
 // Show a can in a random cell
 function spawnWaterCan() {
   if (!gameActive) return;
-  // Clear all cells
   const cells = document.querySelectorAll('.grid-cell');
   cells.forEach(cell => cell.innerHTML = '');
 
-  // Pick a random cell
   const idx = Math.floor(Math.random() * cells.length);
   const can = document.createElement('div');
-
-  // 20% chance for a bad can
-  const isBadCan = Math.random() < 0.2; // 20% chance
-  can.className = isBadCan ? 'bad-can' : 'water-can';
-  can.dataset.type = isBadCan ? 'bad' : 'good';
-
+  can.className = 'water-can';
   can.title = 'Collect this can!';
   can.setAttribute('tabindex', '0');
-
-  // Click or keyboard to collect
   can.addEventListener('click', collectCan);
   can.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' || e.key === ' ') {
       collectCan.call(can, e);
     }
   });
-
   cells[idx].appendChild(can);
 }
 
@@ -242,3 +232,18 @@ document.head.appendChild(confettiStyle);
 }
 `;
 document.head.appendChild(confettiStyle);
+
+/* Suggested CSS Change */
+.water-can {
+  background: #2E9DF7;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  box-shadow: 0 0 8px #2E9DF755;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popUp 0.2s;
+}
